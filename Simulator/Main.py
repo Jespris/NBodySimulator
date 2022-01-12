@@ -2,7 +2,6 @@
 Main
 
 TODO:
-    - fix camera zoom to center correctly
     - fix relative to center body line draw thingy
     - implement adding celestial bodies live
     - implement time controls
@@ -30,7 +29,7 @@ def main():
     clock = p.time.Clock()
     Simulation_Engine = SimulationEngine()
     display = Display(WIDTH, HEIGHT)
-    test()
+    test(display)
     running = True
     while running:
         for e in p.event.get():
@@ -48,7 +47,7 @@ def main():
 
             elif e.type == p.MOUSEWHEEL:
                 # print(e.y)
-                display.zoom_level += e.y * display.zoom_speed
+                display.zoom(e.y)
 
             elif e.type == p.MOUSEBUTTONDOWN:
                 display.mouse_down = True
@@ -85,8 +84,10 @@ def ResolveKeyUpAxis(key, display):
         display.camera_movement.y = 0
 
 
-def test():
-    print(Vector2(5, 1).normalize())
+def test(display):
+    screen_pos = display.world_coordinate_to_screen_pixel(Vector2(2, 2))
+    print("Screen pos of world coordinate (2, 2) is: " + str(screen_pos))
+    print("World pos of screen coordinate " + str(screen_pos) + " is: " + str(display.screen_pixel_to_world_coordinate(screen_pos)))
 
 
 if __name__ == "__main__":

@@ -94,6 +94,9 @@ class Display:
         # y increase is upwards
         return Vector2((pos.x * self.zoom_level) + self.offset.x, (-pos.y * self.zoom_level) + self.offset.y)
 
+    def screen_pixel_to_world_coordinate(self, pos: Vector2):
+        return Vector2((pos.x - self.offset.x) / self.zoom_level, -((pos.y - self.offset.y) / self.zoom_level))
+
     def draw_simulation(self, screen, engine: SimulationEngine):
         self.move_camera()
         self.draw_paths(screen)
@@ -120,5 +123,17 @@ class Display:
         if self.mouse_down:
             self.camera_movement = Vector2(mouse_pos[0] - self.last_mouse_pos[0], mouse_pos[1] - self.last_mouse_pos[1]) * self.drag_speed
         self.last_mouse_pos = mouse_pos
+
+    def zoom(self, dir_amount):
+        # zoom so that the world coordinate in the center of the screen stays the same
+        world_coord_in_center = self.screen_pixel_to_world_coordinate(Vector2(self.width // 2, self.height // 2))
+        self.zoom_level += dir_amount * self.zoom_speed
+        # move camera so that world coordinate is in center
+        self.move_camera_to_world_coordinate(world_coord_in_center)
+
+    def move_camera_to_world_coordinate(self, pos: Vector2):
+        # change offset by difference between screen pos of world coordinate and center of screen
+        difference = Vector2(self.width // 2, self.height // 2) - self.world_coordinate_to_screen_pixel(pos)
+        self.offset += difference
 
 
