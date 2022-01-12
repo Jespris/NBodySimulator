@@ -20,6 +20,11 @@ class SimulationEngine:
     def toggle_pause(self):
         self.isPaused = not self.isPaused
 
+    def change_sim_speed(self, amount):
+        new_speed = self.simulation_speed * amount
+        if 0.00001 <= new_speed <= 0.1:
+            self.simulation_speed = new_speed
+
     def Update(self, delta_time):
         self.delta_time = delta_time
         # print(self.central_body)

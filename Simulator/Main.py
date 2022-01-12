@@ -2,11 +2,8 @@
 Main
 
 TODO:
-    - fix relative to center body line draw thingy
     - implement adding celestial bodies live
-    - implement time controls
 """
-import math
 
 import pygame as p
 from win32api import GetSystemMetrics
@@ -38,9 +35,7 @@ def main():
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_ESCAPE:
                     running = False
-                elif e.key == p.K_SPACE:
-                    Simulation_Engine.toggle_pause()
-                ResolveKeyDownAxis(e.key, display)
+                ResolveKeyDown(e, display, Simulation_Engine)
 
             elif e.type == p.KEYUP:
                 ResolveKeyUpAxis(e.key, display)
@@ -50,8 +45,10 @@ def main():
                 display.zoom(e.y)
 
             elif e.type == p.MOUSEBUTTONDOWN:
-                display.mouse_down = True
-                display.last_mouse_pos = p.mouse.get_pos()
+                done = Resolve_UI_Click(e, display)
+                if not done:
+                    display.mouse_down = True
+                    display.last_mouse_pos = p.mouse.get_pos()
 
             elif e.type == p.MOUSEBUTTONUP:
                 display.mouse_down = False
@@ -63,10 +60,26 @@ def main():
         display.camera_drag(p.mouse.get_pos())
         display.draw_simulation(screen, Simulation_Engine)
         delta_time = clock.tick(FPS)
+        display.update_deltatime(delta_time)
         Simulation_Engine.Update(delta_time)
 
 
-def ResolveKeyDownAxis(key, display):
+def Resolve_UI_Click(e, display):
+    for form in display.forms:
+        done = form.handle_event(e)
+        if done:
+            return True
+    return False
+
+
+def ResolveKeyDown(event, display, engine):
+    for form in display.forms:
+        done = form.handle_event(event)
+        if done:
+            return
+
+    key = event.key
+
     if key == p.K_LEFT or key == p.K_a:
         display.camera_movement.x = 1
     elif key == p.K_RIGHT or key == p.K_d:
@@ -75,6 +88,17 @@ def ResolveKeyDownAxis(key, display):
         display.camera_movement.y = 1
     elif key == p.K_DOWN or key == p.K_s:
         display.camera_movement.y = -1
+
+    if key == p.K_z:
+        engine.change_sim_speed(0.1)
+    elif key == p.K_x:
+        engine.change_sim_speed(10)
+
+    if key == p.K_c:
+        display.show_paths = not display.show_paths
+
+    if key == p.K_SPACE:
+        engine.toggle_pause()
 
 
 def ResolveKeyUpAxis(key, display):
@@ -92,5 +116,6 @@ def test(display):
 
 if __name__ == "__main__":
     main()
+    p.quit()
 
 
