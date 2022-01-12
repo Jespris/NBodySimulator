@@ -9,10 +9,10 @@ import pygame as p
 from win32api import GetSystemMetrics
 from Vector import Vector2
 from SimulationEngine import SimulationEngine
-from Display import Display
+from Display import Display, FORM, BUTTON
 
 # GLOBALS
-SCREENSIZE = 1
+SCREENSIZE = 0.6
 WIDTH = int(GetSystemMetrics(0) * SCREENSIZE)
 HEIGHT = int(GetSystemMetrics(1) * SCREENSIZE)
 FPS = 30
@@ -26,7 +26,8 @@ def main():
     clock = p.time.Clock()
     Simulation_Engine = SimulationEngine()
     display = Display(WIDTH, HEIGHT)
-    test(display)
+    display.create_ui_objects(Simulation_Engine)
+    # test(display)
     running = True
     while running:
         for e in p.event.get():
@@ -56,27 +57,32 @@ def main():
 
         p.display.flip()
         screen.fill(p.Color("black"))
+        delta_time = clock.tick(FPS)
+        Simulation_Engine.Update(delta_time, display)
         display.update_paths(Simulation_Engine)
         display.camera_drag(p.mouse.get_pos())
         display.draw_simulation(screen, Simulation_Engine)
-        delta_time = clock.tick(FPS)
-        display.update_deltatime(delta_time)
-        Simulation_Engine.Update(delta_time)
 
 
 def Resolve_UI_Click(e, display):
-    for form in display.forms:
-        done = form.handle_event(e)
+    for ui in display.ui_objects:
+        done = False
+        if ui.type == FORM:
+            done = ui.handle_event(e)
+        elif ui.type == BUTTON:
+            done = ui.is_clicked = ui.get_clicked(p.mouse.get_pos())
+
         if done:
             return True
     return False
 
 
 def ResolveKeyDown(event, display, engine):
-    for form in display.forms:
-        done = form.handle_event(event)
-        if done:
-            return
+    for ui in display.ui_objects:
+        if ui.type == FORM:
+            done = ui.handle_event(event)
+            if done:
+                return
 
     key = event.key
 

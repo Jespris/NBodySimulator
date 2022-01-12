@@ -40,6 +40,8 @@ class Vector2:
 
     def __mul__(self, other):
         if isinstance(other, Vector2):
+            if self.x is None or self.y is None:
+                return Vector2.zero()
             return Vector2(self.x * other.x, self.y * other.y)
         return Vector2(self.x * other, self.y * other)
 

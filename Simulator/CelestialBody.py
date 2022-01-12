@@ -4,6 +4,23 @@ Contains class celestialbody
 
 from Universe import Universe
 from Vector import Vector2
+import pygame as p
+
+
+class NewCelestialBody:
+    def __init__(self):
+        self.pos = Vector2.zero()
+        self.radius = 1
+        self.gravity = 1
+        self.initial_velocity = Vector2.zero()
+        self.name = "Unnamed"
+        self.color = p.Color("white")
+
+    def update(self):
+        if self.radius < 1:
+            self.radius = 1
+        if self.name == "":
+            self.name = "Unnamed"
 
 
 class CelestialBody:

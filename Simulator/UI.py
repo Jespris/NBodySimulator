@@ -20,26 +20,49 @@ class UI_Object:
         self.layer = 0
         self.show = True
         self.function = function
+        self.type = "ui"
+        self.image: p.image = None
+        self.is_clickable = False
 
     def do_function(self):
         self.function()
 
     def draw(self, screen):
-        if self.is_circle:
-            if self.has_border:
-                p.draw.circle(screen, p.Color("black"), self.position.tuple(), max(self.width, self.height))
-            p.draw.circle(screen, self.color, self.position.tuple(),
-                          max(self.width - self.border_thickness, self.height - self.border_thickness))
+        if self.image is not None:
+            screen.blit(self.image, self.position.tuple())
         else:
-            # rectangle
-            if self.has_border:
-                p.draw.rect(screen, p.Color("black"),
-                            p.Rect(self.position.x - self.width // 2, self.position.y - self.height // 2,
-                                   self.width, self.height))
-            p.draw.rect(screen, self.color, p.Rect(self.position.x - self.width // 2 + self.border_thickness,
-                                                   self.position.y - self.height // 2 + self.border_thickness,
-                                                   self.width - 2 * self.border_thickness,
-                                                   self.height - 2 * self.border_thickness))
+            if self.is_circle:
+                if self.has_border:
+                    p.draw.circle(screen, p.Color("black"), self.position.tuple(), max(self.width, self.height))
+                p.draw.circle(screen, self.color, self.position.tuple(),
+                              max(self.width - self.border_thickness, self.height - self.border_thickness))
+            else:
+                # rectangle
+                if self.has_border:
+                    p.draw.rect(screen, p.Color("black"),
+                                p.Rect(self.position.x - self.width // 2, self.position.y - self.height // 2,
+                                       self.width, self.height))
+                p.draw.rect(screen, self.color, p.Rect(self.position.x - self.width // 2 + self.border_thickness,
+                                                       self.position.y - self.height // 2 + self.border_thickness,
+                                                       self.width - 2 * self.border_thickness,
+                                                       self.height - 2 * self.border_thickness))
+
+    def update(self, delta_time):
+        pass
+
+    def get_clicked(self, mouse):
+        if not self.is_clickable or not self.show:
+            return False
+        vector_mouse = Vector2(mouse[0], mouse[1])
+        if self.is_circle:
+            if max(self.width, self.height) >= (vector_mouse - self.position).magnitude():
+                return True
+        else:
+            if self.position.x - self.width // 2 <= vector_mouse.x <= self.position.x + self.width // 2 and \
+                    self.position.y - self.height // 2 <= vector_mouse.y <= self.position.y + self.height // 2:
+                print("clicked on: " + self.name)
+                return True
+        return False
 
 
 class Button(UI_Object):
@@ -49,10 +72,21 @@ class Button(UI_Object):
         self.on_click = on_click
         self.radius = max(self.width, self.height)
         self.click_color = p.Color("grey")
+        self.click_time = 0.2  # time the button is greyed out (s)
+        self.time_until_not_clicked = 0
+        self.is_clickable = True
+        self.prompt_text = ""
+        self.text_size = min(self.width, self.height) // 2  # tweak this for better text fitting
+        self.font = p.font.Font('freesansbold.ttf', self.text_size)
+        self.bold = False
 
     def draw(self, screen):
         super().draw(screen)
-        if self.is_clicked:
+        text_surface = self.font.render(self.prompt_text, self.bold, self.color)
+        text_rect = text_surface.get_rect()
+        text_rect.center = self.position.tuple()
+        screen.blit(text_surface, text_rect)
+        if self.time_until_not_clicked > 0:
             if self.is_circle:
                 radius = self.radius - self.border_thickness
                 p.draw.circle(screen, self.click_color, self.position.tuple(), radius)
@@ -62,6 +96,20 @@ class Button(UI_Object):
                                    self.position.y - self.height // 2 + self.border_thickness,
                                    self.width - 2 * self.border_thickness,
                                    self.height - 2 * self.border_thickness))
+
+    def update(self, delta_time):
+        if self.is_clicked:
+            # print("button clicked")
+            self.time_until_not_clicked = self.click_time
+            if self.on_click is not None:
+                self.on_click()
+            self.is_clicked = False
+
+        if self.time_until_not_clicked > 0:
+            self.time_until_not_clicked -= delta_time / 1000
+
+        if self.time_until_not_clicked < 0:
+            self.time_until_not_clicked = 0
 
 
 class TextObject(UI_Object):
@@ -90,15 +138,17 @@ class Form(TextObject):
     def __init__(self, name, pos, size):
         super().__init__(name, pos, size, "")
         self.active = False
-        self.input_box = p.Rect(self.position.x - self.width // 2, self.position.y - self.height // 2,
-                                self.width, self.height)
         self.active_color = self.COLOR_INACTIVE
         self.text_color = p.Color("black")
+        self.is_clickable = True
+        self.saved_text = ""
+        self.prompt_text = ""
 
     def handle_event(self, event):
         updated_this = False
+        mouse = p.mouse.get_pos()
         if event.type == p.MOUSEBUTTONDOWN:
-            if self.input_box.collidepoint(event.pos):
+            if self.get_clicked(mouse):
                 self.active = not self.active
                 print("Clicked on this form: " + self.name)
                 updated_this = True
@@ -109,8 +159,8 @@ class Form(TextObject):
         if event.type == p.KEYDOWN:
             if self.active:
                 if event.key == p.K_RETURN:
-                    print("Submitted form with text: " + self.text)
-                    self.text = ""
+                    self.saved_text = self.text
+                    self.active = False
                 elif event.key == p.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
@@ -120,8 +170,13 @@ class Form(TextObject):
         return updated_this
 
     def draw(self, screen):
-        super().draw(screen)
-        p.draw.rect(screen, self.active_color, self.input_box, 2)
+        text_surface = self.font.render(self.prompt_text + self.text, self.bold, self.color)
+        text_rect = text_surface.get_rect()
+        text_rect.center = self.position.tuple()
+        screen.blit(text_surface, text_rect)
+        p.draw.rect(screen, self.active_color,
+                    p.Rect(self.position.x - self.width // 2, self.position.y - self.height // 2,
+                           self.width, self.height), 4)
 
 
 
