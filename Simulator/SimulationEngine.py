@@ -15,13 +15,14 @@ class SimulationEngine:
         self.simulation_speed = 0.001
         self.isPaused = True
         self.create_bodies()
-        self.central_body = None
+        self.central_body: CelestialBody
 
     def toggle_pause(self):
         self.isPaused = not self.isPaused
 
     def Update(self, delta_time):
         self.delta_time = delta_time
+        # print(self.central_body)
         # print("Delta time: " + str(self.delta_time) + "ms")
         if not self.isPaused:
             for body in self.bodies:

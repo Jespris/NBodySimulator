@@ -28,6 +28,9 @@ class CelestialBody:
             return self.name == other.name
         return False
 
+    def __str__(self):
+        return self.name
+
 
 class VirtualBody:
     def __init__(self, body: CelestialBody):
