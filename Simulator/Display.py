@@ -98,11 +98,15 @@ class Display:
         pause_button.type = BUTTON
         self.ui_objects.append(pause_button)
 
-        new_body_button = Button("NewBody Button", Vector2(self.width // 2, 220), (200, 40), engine.create_new_body())
+        new_body_button = Button("NewBody Button", Vector2(self.width // 2, 220), (200, 40), engine.create_new_body)
         new_body_button.type = BUTTON
         new_body_button.layer = 1
         new_body_button.prompt_text = "Create New!"
         self.ui_objects.append(new_body_button)
+
+        new_body_panel_button = Button("NewBodyPanel Button", Vector2(self.width // 2 - 120, 20), (40, 40), engine.toggle_new_body)
+        new_body_panel_button.type = BUTTON
+        self.ui_objects.append(new_body_panel_button)
 
     def get_form_text(self, form_name):
         for ui in self.ui_objects:
@@ -116,17 +120,10 @@ class Display:
             ui.update(self.delta_time)
         self.show_new_panel = newBody
 
-
     def get_fps(self):
         return "FPS: " + str(self.delta_time)
 
     def update_paths(self, engine: SimulationEngine):
-        """
-        if not self.paths and engine.isPaused:
-            self.get_paths(engine)
-        if not engine.isPaused:
-            self.paths = []
-        """
         if self.show_paths:
             self.paths = self.celestial_path.get_paths(engine, self.draw_relative_to_body, self.show_new_panel)
 
@@ -178,6 +175,13 @@ class Display:
             screen_pos = self.world_coordinate_to_screen_pixel(body.pos)
             radius = body.radius * self.zoom_level
             p.draw.circle(screen, body.color, screen_pos.tuple(), radius)
+            self.draw_trails(screen, body)
+
+    def draw_trails(self, screen, body):
+        for i in range(len(body.trail) - 1):
+            start = self.world_coordinate_to_screen_pixel(body.trail[i]).tuple()
+            end = self.world_coordinate_to_screen_pixel(body.trail[i + 1]).tuple()
+            p.draw.line(screen, p.Color("white"), start, end, 1)
 
     def move_camera(self):
         self.offset += self.camera_movement * self.camera_speed

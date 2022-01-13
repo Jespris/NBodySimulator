@@ -25,6 +25,11 @@ class SimulationEngine:
     def toggle_pause(self):
         self.isPaused = not self.isPaused
 
+    def toggle_new_body(self):
+        self.new_in_progress = not self.new_in_progress
+        if self.new_in_progress:
+            self.new_celestial_body = NewCelestialBody()
+
     def change_sim_speed(self, amount):
         new_speed = self.simulation_speed * amount
         if 0.00001 <= new_speed <= 0.1:
@@ -97,6 +102,7 @@ class SimulationEngine:
             print("velocity: " + str(self.new_celestial_body.initial_velocity))
 
     def create_new_body(self):
+        print("Creating new body!")
         colors = ("blue", "red", "orange", "brown", "yellow", "green", "darkblue", "pink")
         newBody = CelestialBody(self.new_celestial_body.pos,
                                 self.new_celestial_body.radius,
@@ -106,6 +112,7 @@ class SimulationEngine:
                                 p.Color(colors[random.randint(0, len(colors) - 1)]))
         self.bodies.append(newBody)
         self.new_celestial_body = NewCelestialBody()
+        self.new_in_progress = False
 
     def create_bodies(self):
         self.bodies.append(CelestialBody(Vector2(0, -25), 10, 100, Vector2(5, 0), "Sun", p.Color("yellow")))

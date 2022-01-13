@@ -17,7 +17,7 @@ class CelestialPath:
         self.reference_index = 0
         self.central_body = None
         self.reference_initial_position = Vector2.zero()
-        self.num_steps = 500
+        self.num_steps = 100
         self.time_step = 0.1
 
     def get_paths(self, engine: SimulationEngine, get_relative, newBody):
@@ -39,6 +39,7 @@ class CelestialPath:
                 self.reference_initial_position = body.pos
         # add the in progress new celestial body
         if engine.new_celestial_body is not None and newBody:
+            print("Getting in progress body path")
             real_version_of_in_progress_body = CelestialBody(engine.new_celestial_body.pos,
                                                              engine.new_celestial_body.radius,
                                                              engine.new_celestial_body.gravity,
