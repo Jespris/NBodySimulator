@@ -12,7 +12,7 @@ from SimulationEngine import SimulationEngine
 from Display import Display, FORM, BUTTON
 
 # GLOBALS
-SCREENSIZE = 0.6
+SCREENSIZE = 1
 WIDTH = int(GetSystemMetrics(0) * SCREENSIZE)
 HEIGHT = int(GetSystemMetrics(1) * SCREENSIZE)
 FPS = 30

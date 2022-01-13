@@ -21,7 +21,8 @@ class CelestialPath:
         self.time_step = 0.1
 
     def get_paths(self, engine: SimulationEngine, get_relative, newBody):
-        self.central_body = engine.central_body
+        if engine.central_body:
+            self.central_body = engine.central_body
         # print("Central body:", str(self.central_body))
         paths: list[Path] = []
         self.virtual_bodies = []

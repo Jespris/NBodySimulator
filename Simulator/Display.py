@@ -30,7 +30,7 @@ class Display:
         self.mouse_down = False
         self.drag_speed = 0.1
         self.paths: list[Path] = []
-        self.draw_relative_to_body = True
+        self.draw_relative_to_body = False
         self.show_paths = True
         self.show_new_panel = False
         self.delta_time = 0

@@ -16,7 +16,7 @@ class SimulationEngine:
         self.delta_time = 0
         self.simulation_speed = 0.001
         self.isPaused = True
-        self.central_body: CelestialBody
+        self.central_body: CelestialBody = None
         self.create_bodies()
 
         self.new_celestial_body = NewCelestialBody()
@@ -115,9 +115,9 @@ class SimulationEngine:
         self.new_in_progress = False
 
     def create_bodies(self):
-        self.bodies.append(CelestialBody(Vector2(0, -25), 10, 100, Vector2(5, 0), "Sun", p.Color("yellow")))
-        self.central_body = self.bodies[0]
-        self.bodies.append(CelestialBody(Vector2(50, 70), 1, 1, Vector2(40, -40), "Planet", p.Color("blue")))
+        self.bodies.append(CelestialBody(Vector2(0, 0), 10, 200, Vector2(50, 0), "Sun", p.Color("yellow")))
+        self.bodies.append(CelestialBody(Vector2(0, 100), 10, 200, Vector2(-50, 0), "Sun2", p.Color("blue")))
+        self.bodies.append(CelestialBody(Vector2(200, 0), 4, 1, Vector2(0, -80), "Planet2", p.Color("red")))
 
     def calculate_acceleration(self, point: Vector2, ignore_body):
         acceleration = Vector2.zero()
