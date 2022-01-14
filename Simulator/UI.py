@@ -76,16 +76,19 @@ class Button(UI_Object):
         self.time_until_not_clicked = 0
         self.is_clickable = True
         self.prompt_text = ""
+        self.text_color = p.Color("black")
         self.text_size = min(self.width, self.height) // 2  # tweak this for better text fitting
         self.font = p.font.Font('freesansbold.ttf', self.text_size)
         self.bold = False
 
     def draw(self, screen):
         super().draw(screen)
-        text_surface = self.font.render(self.prompt_text, self.bold, self.color)
+
+        text_surface = self.font.render(self.prompt_text, self.bold, self.text_color)
         text_rect = text_surface.get_rect()
         text_rect.center = self.position.tuple()
         screen.blit(text_surface, text_rect)
+
         if self.time_until_not_clicked > 0:
             if self.is_circle:
                 radius = self.radius - self.border_thickness

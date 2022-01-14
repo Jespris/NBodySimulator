@@ -17,8 +17,8 @@ class CelestialPath:
         self.reference_index = 0
         self.central_body = None
         self.reference_initial_position = Vector2.zero()
-        self.num_steps = 100
-        self.time_step = 0.1
+        self.num_steps = 1000
+        self.time_step = 0.01
 
     def get_paths(self, engine: SimulationEngine, get_relative, newBody):
         if engine.central_body:
@@ -92,7 +92,7 @@ class CelestialPath:
             force_dir = (virtual_bodies[j].position - virtual_bodies[i].position).normalize()
             distance = (virtual_bodies[j].position - virtual_bodies[i].position).magnitude()
             if distance == 0:
-                acceleration = 0
+                acceleration = Vector2.zero()
             else:
                 acceleration += force_dir * Universe.Big_G * virtual_bodies[j].mass / distance
 

@@ -27,6 +27,9 @@ class Vector2:
     def tuple(self):
         return tuple((self.x, self.y))
 
+    def angle(self):
+        return math.atan2(self.y, self.x)
+
     # overriding the addition and multiplication definitions
     def __add__(self, other):
         if isinstance(other, Vector2):

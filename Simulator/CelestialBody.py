@@ -16,7 +16,6 @@ class NewCelestialBody:
         self.name = "Unnamed"
         self.color = p.Color("white")
 
-
     def update(self):
         if self.radius < 1:
             self.radius = 1
@@ -25,14 +24,14 @@ class NewCelestialBody:
 
 
 class CelestialBody:
-    def __init__(self, pos: Vector2, radius, gravity, initial_velocity, name, color):
+    def __init__(self, pos: Vector2, radius, gravity, density, initial_velocity, name, color):
         self.pos: Vector2 = pos
         self.radius = radius
         self.surface_gravity = gravity
         self.velocity = initial_velocity
         self.name = name
         self.color = color
-        self.mass = self.surface_gravity * radius * radius / Universe.Big_G
+        self.mass = density * self.surface_gravity * radius * radius / Universe.Big_G
         self.trail = []  # list of tuples for drawing trails
 
     def UpdateVelocity(self, acceleration, time_step):
@@ -43,7 +42,7 @@ class CelestialBody:
         # print(self.name + " position: " + str(self.pos))
         # append a trail
         self.trail.append(Vector2(self.pos.x, self.pos.y))
-        if len(self.trail) > 10:  # change for longer trails?
+        if len(self.trail) > 100:  # change for longer trails?
             self.trail.pop(0)
 
     def __eq__(self, other):

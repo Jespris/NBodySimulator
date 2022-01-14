@@ -21,8 +21,8 @@ class Display:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.zoom_level = 5
-        self.zoom_speed = 0.5
+        self.zoom_level = 0.001
+        self.zoom_speed = 0.01
         self.offset = Vector2(self.width // 2, self.height // 2)
         self.camera_movement = Vector2.zero()
         self.camera_speed = 10
@@ -30,7 +30,7 @@ class Display:
         self.mouse_down = False
         self.drag_speed = 0.1
         self.paths: list[Path] = []
-        self.draw_relative_to_body = False
+        self.draw_relative_to_body = True
         self.show_paths = True
         self.show_new_panel = False
         self.delta_time = 0
@@ -94,19 +94,30 @@ class Display:
         velY_form.prompt_text = "y: "
         self.ui_objects.append(velY_form)
 
-        pause_button = Button("Pause Button", Vector2(30, self.height - 30), (30, 30), engine.toggle_pause)
+        pause_button = Button("Pause Button", Vector2(80, self.height - 30), (150, 50), engine.toggle_pause)
         pause_button.type = BUTTON
+        pause_button.prompt_text = "Pause"
+
         self.ui_objects.append(pause_button)
 
         new_body_button = Button("NewBody Button", Vector2(self.width // 2, 220), (200, 40), engine.create_new_body)
         new_body_button.type = BUTTON
         new_body_button.layer = 1
-        new_body_button.prompt_text = "Create New!"
+        new_body_button.prompt_text = "Create!"
         self.ui_objects.append(new_body_button)
 
-        new_body_panel_button = Button("NewBodyPanel Button", Vector2(self.width // 2 - 120, 20), (40, 40), engine.toggle_new_body)
+        new_body_panel_button = Button("NewBodyPanel Button", Vector2(self.width // 2 - 160, 40), (100, 60), engine.toggle_new_body)
         new_body_panel_button.type = BUTTON
+        new_body_panel_button.prompt_text = "New"
         self.ui_objects.append(new_body_panel_button)
+
+        show_orbits = Button("Show orbits Button", Vector2(320, self.height - 30), (150, 50), self.toggle_show_orbits)
+        show_orbits.type = BUTTON
+        show_orbits.prompt_text = "Orbits"
+        self.ui_objects.append(show_orbits)
+
+    def toggle_show_orbits(self):
+        self.show_paths = not self.show_paths
 
     def get_form_text(self, form_name):
         for ui in self.ui_objects:
@@ -121,7 +132,7 @@ class Display:
         self.show_new_panel = newBody
 
     def get_fps(self):
-        return "FPS: " + str(self.delta_time)
+        return "FPS: " + str(1000 // self.delta_time)
 
     def update_paths(self, engine: SimulationEngine):
         if self.show_paths:
@@ -165,15 +176,16 @@ class Display:
     def draw_paths(self, screen):
         if self.show_paths:
             for path in self.paths:
-                for i in range(0, len(path.points) - 1):
+                length = len(path.points)
+                for i in range(0, length - 1):
                     start = self.world_coordinate_to_screen_pixel(path.points[i]).tuple()
                     end = self.world_coordinate_to_screen_pixel(path.points[i + 1]).tuple()
-                    p.draw.line(screen, path.color, start, end, 4)
+                    p.draw.line(screen, path.color, start, end, int(8 - (i / length) * 8))
 
     def draw_bodies(self, screen, engine):
         for body in engine.bodies:
             screen_pos = self.world_coordinate_to_screen_pixel(body.pos)
-            radius = body.radius * self.zoom_level
+            radius = body.radius * self.zoom_level * 10
             p.draw.circle(screen, body.color, screen_pos.tuple(), radius)
             self.draw_trails(screen, body)
 
@@ -181,7 +193,8 @@ class Display:
         for i in range(len(body.trail) - 1):
             start = self.world_coordinate_to_screen_pixel(body.trail[i]).tuple()
             end = self.world_coordinate_to_screen_pixel(body.trail[i + 1]).tuple()
-            p.draw.line(screen, p.Color("white"), start, end, 1)
+            color = p.Color("white") if self.show_paths else body.color
+            p.draw.line(screen, color, start, end, 1)
 
     def move_camera(self):
         self.offset += self.camera_movement * self.camera_speed
@@ -195,10 +208,12 @@ class Display:
     def zoom(self, dir_amount):
         # zoom so that the world coordinate in the center of the screen stays the same
         new_level = self.zoom_level + dir_amount * self.zoom_speed
-        if new_level < 0.2:
-            new_level = 0.2
-        elif new_level > 10:
-            new_level = 10
+        if new_level < 0.001:
+            new_level = 0.001
+        elif new_level > 20:
+            new_level = 20
+
+        self.zoom_speed = self.zoom_level / 10
 
         world_coord_in_center = self.screen_pixel_to_world_coordinate(Vector2(self.width // 2, self.height // 2))
         self.zoom_level = new_level
